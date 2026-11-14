@@ -21,6 +21,7 @@ BOT_USERNAME = "J3rryMovie_bot"
 
 CHANNEL_ID = -1004394045407
 CHANNEL_LINK = "https://t.me/+7nd_UEdHcj4xMWVl"
+
 DB_NAME = "movies.db"
 
 def init_db():
@@ -56,17 +57,18 @@ async def check_join(user_id, context):
     try:
         member = await context.bot.get_chat_member(
             chat_id=CHANNEL_ID,
-             user_id=user_id
-        )
-        return member.status in [
+            user_id=user_id
+    )
+    return member.status in [
             "member",
             "administrator",
             "creator"
-        ]
-    except Exception:
+    ]
+    except Exception as error:
+        print("JOIN CHECK ERROR:", error)
         return False
 
-async def send_movie(message, context, code):
+async def send_movie(message, code):
     file_id = get_video(code)
 
     if not file_id:
@@ -79,17 +81,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "🎬 Welcome!\nSend a video to the bot to create a movie link."
         )
-        return
+         return
 
     code = context.args[0]
 
     joined = await check_join(
         update.effective_user.id,
-         context
+        context
     )
 
     if joined:
-        await send_movie(update.message, context, code)
+        await send_movie(update.message, code)
         return
 
     keyboard = [
@@ -97,24 +99,21 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton(
                 "📢 JOIN CHANNEL",
                 url=CHANNEL_LINK
-            )
-          ],
-        [
-            InlineKeyboardButton(
-                "✅ I JOINED",
-                callback_data=f"check_{code}"
-            )
-        ]
+        )
+    ],
+    [
+        InlineKeyboardButton(
+            "✅ I JOINED",
+            callback_data=f"check_{code}"
+        )
     ]
+]
 
-    await update.message.reply_text(
-        "🔒 Please join our channel first.",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-async def check_button(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+await update.message.reply_text(
+    "🔒 Please join our channel first.",
+    reply_markup=InlineKeyboardMarkup(keyboard)
+)
+async def check_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
@@ -122,12 +121,12 @@ async def check_button(
 
     joined = await check_join(
         query.from_user.id,
-        context
+          context
     )
 
     if joined:
         await query.message.reply_text("✅ Join verified!")
-        await send_movie(query.message, context, code)
+        await send_movie(query.message, code)
     else:
         await query.answer(
             "❌ Please join the channel first!",
