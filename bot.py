@@ -54,6 +54,32 @@ def get_video(code):
     return result[0] if result else None
 
 async def check_join(user_id, context):
+
+    try:
+
+        member = await context.bot.get_chat_member(
+
+            chat_id=CHANNEL_ID,
+
+            user_id=user_id
+
+        )
+
+        return member.status in [
+
+            "member",
+
+            "administrator",
+
+            "creator"
+
+        ]
+
+    except Exception as error:
+
+        print("JOIN CHECK ERROR:", error)
+
+        return False
     try:
         member = await context.bot.get_chat_member(
             chat_id=CHANNEL_ID,
