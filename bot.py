@@ -132,11 +132,10 @@ async def check_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "❌ Please join the channel first!",
             show_alert=True
         )
-async def upload_video(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def upload_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     if update.effective_user.id != ADMIN_ID:
+
         return
 
     video = update.message.video
@@ -148,14 +147,21 @@ async def upload_video(
     link = f"https://t.me/{BOT_USERNAME}?start={code}"
 
     await update.message.reply_text(
-         f"🎬 Video saved!\n\n"
+
+        f"🎬 Video saved!\n\n"
+
         f"🔗 Movie Link:\n{link}"
+
     )
+
 def main():
+
     token = os.getenv("BOT_TOKEN")
+
     url = os.getenv("RENDER_EXTERNAL_URL")
 
     if not token or not url:
+
         raise RuntimeError("BOT_TOKEN or RENDER_EXTERNAL_URL is missing")
 
     init_db()
@@ -163,14 +169,23 @@ def main():
     app = Application.builder().token(token).build()
 
     app.add_handler(CommandHandler("start", start))
+
     app.add_handler(CallbackQueryHandler(check_button))
+
     app.add_handler(MessageHandler(filters.VIDEO, upload_video))
 
     app.run_webhook(
+
         listen="0.0.0.0",
+
         port=int(os.getenv("PORT", "10000")),
+
         url_path="telegram",
+
         webhook_url=f"{url}/telegram"
+
     )
+
 if __name__ == "__main__":
+
     main()
